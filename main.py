@@ -18,7 +18,7 @@ wh, gray, bl = (255, 255, 255), (185, 185, 185), (0, 0, 0) # сокращённ�
 brd_color, bg_color, txt_color, title_color, info_color = wh, bl, wh, colors[3], colors[0]
 fig_we, fig_he = 5, 5
 empty = 'o'
-
+# фигурки
 figures = {
     'S': [['ooooo',
            'ooooo',
@@ -117,13 +117,13 @@ figures = {
            'ooooo']]
 }
 
-
+# метод ответственный за паузу
 def Screenpause():
     pause = pgm.Surface((600, 500), pgm.SRCALPHA)
     pause.fill((0, 0, 255, 127))
     dis_surf.blit(pause, (0, 0))
 
-
+# основной метод
 def main():
     global fps_clock, dis_surf, basic_fon, big_fon
     pgm.init()
@@ -138,7 +138,7 @@ def main():
         Screenpause()
         showText('Игра окончена')
 
-
+# запуск игры и сама игра собственно
 def Tetris_run():
     cup = emptycup()
     last_move_down = time.time()
@@ -166,7 +166,7 @@ def Tetris_run():
             if events.type == KEYUP:
                 if events.key == K_SPACE:
                     Screenpause()
-                    showText('Игра на паузе! ')
+                    showText('Игра на паузе!')
                     last_fall = time.time()
                     last_move_down = time.time()
                     last_side_move = time.time()
@@ -229,7 +229,7 @@ def Tetris_run():
         if time.time() - last_fall > fall_speed:  # падение
             if not checkPos(cup, fallingFig, adjY=1):  # проверка касания фигурой пола
                 addToCup(cup, fallingFig)  # фигура приземлилась добавляем
-                points += clearCompleted(cup)
+                points += Completed_clear(cup)
                 level, fall_speed = calcSpeed(points)
                 fallingFig = None
             else:  # фигура пока не приземлилась, движемся вниз
@@ -247,17 +247,17 @@ def Tetris_run():
         pgm.display.update()
         fps_clock.tick(fps)
 
-
+# объекты в формате txt нужно для корректной работы метода ниже
 def tуxtObjects(text, font, color):
     surf = font.render(text, True, color)
     return surf, surf.get_rect()
 
-
+# метод выхода из игры, проще говоря замена оригиналу
 def stop():
     pgm.quit()
     sys.exit()
 
-
+# проверка нажатия кнопки
 def Keys_check():
     quitGame()
 
@@ -267,7 +267,7 @@ def Keys_check():
         return event.key
     return None
 
-
+# начальный экран
 def showText(text):
     titleSurf, titleRect = tуxtObjects(text, big_fon, title_color)
     titleRect.center = (int(window_we / 2) - 3, int(window_he / 2) - 3)
@@ -281,7 +281,7 @@ def showText(text):
         pgm.display.update()
         fps_clock.tick()
 
-
+# выход из игры
 def quitGame():
     for event in pgm.event.get(QUIT):  # проверка всех событий, приводящих к выходу из игры
         stop()
@@ -290,14 +290,14 @@ def quitGame():
             stop()
         pgm.event.post(event)
 
-
+# подсчёт скорости
 def calcSpeed(points):
     # вычисляет уровень
     level = int(points / 3) + 1
     fall_speed = 0.27 - (level * 0.05)
     return level, fall_speed
 
-
+# генератор след фигуры
 def getNewFig():
     # возвращает новую фигуру со случайным цветом и углом поворота
     shape = random.choice(list(figures.keys()))
@@ -308,14 +308,14 @@ def getNewFig():
                  'color': random.randint(0, len(colors) - 1)}
     return newFigure
 
-
+# взаимодействие с фигурой на поле
 def addToCup(cup, fig):
     for x in range(fig_we):
         for y in range(fig_he):
             if figures[fig['shape']][fig['rotation']][y][x] != empty:
                 cup[x + fig['x']][y + fig['y']] = fig['color']
 
-
+# создание игрового поля
 def emptycup():
     cup = []
     for i in range(pole_w):
@@ -340,7 +340,7 @@ def checkPos(cup, fig, adjX=0, adjY=0):
                 return False
     return True
 
-
+# проверка поля на пустоту
 def zaversheno(pole, y):
     for x in range(pole_w):
         if pole[x][y] == empty:
@@ -348,8 +348,8 @@ def zaversheno(pole, y):
     return True
 
 
-
-def clearCompleted(cup):
+# удаление "собранной" линии
+def Completed_clear(cup):
     removed_lines = 0
     y = pole_h - 1
     while y >= 0:
@@ -365,7 +365,7 @@ def clearCompleted(cup):
     return removed_lines
 
 
-
+# конвертация координат
 def convertCoords(block_x, block_y):
     return (n_margin + (block_x * block)), (t_margin + (block_y * block))
 
@@ -392,21 +392,21 @@ def gamecup(pole):
         for y in range(pole_h):
             drawBlock(x, y, pole[x][y])
 
-
+# начальный экран2
 def drawTitle():
     titleSurf = big_fon.render('Тетрис', True, title_color)
     titleRect = titleSurf.get_rect()
     titleRect.topleft = (window_we - 385, 30)
     dis_surf.blit(titleSurf, titleRect)
 
-
+# вывод информации
 def drawInfo(points, level):
     pointsSurf = basic_fon.render(f'Очки: {points}', True, txt_color)
     pointsRect = pointsSurf.get_rect()
     pointsRect.topleft = (window_we - 550, 180)
     dis_surf.blit(pointsSurf, pointsRect)
 
-    levelSurf = basic_fon.render(f'Уровень: {level}', True, txt_color)
+    levelSurf = basic_fon.render(f' Скорость: {level}', True, txt_color)
     levelRect = levelSurf.get_rect()
     levelRect.topleft = (window_we - 550, 250)
     dis_surf.blit(levelSurf, levelRect)
@@ -422,7 +422,7 @@ def drawInfo(points, level):
     dis_surf.blit(escbSurf, escbRect)
     level
 
-
+# отрисовка фигуры
 def drawFig(fig, pixelx=None, pixely=None):
     figToDraw = figures[fig['shape']][fig['rotation']]
     if pixelx == None and pixely == None:
@@ -433,7 +433,7 @@ def drawFig(fig, pixelx=None, pixely=None):
             if figToDraw[y][x] != empty:
                 drawBlock(None, None, fig['color'], pixelx + (x * block), pixely + (y * block))
 
-
+# отрисовка след фигуры(справа внизу)
 def drawnewFig(figure):  # превью следующей фигуры
     nextSurf = basic_fon.render('Следующая:', True, txt_color)
     nextRect = nextSurf.get_rect()
@@ -441,6 +441,6 @@ def drawnewFig(figure):  # превью следующей фигуры
     dis_surf.blit(nextSurf, nextRect)
     drawFig(figure, pixelx=window_we - 150, pixely=230)
 
-
+# без этого не работает
 if __name__ == '__main__':
     main()
